@@ -41,6 +41,7 @@
  * @ingroup    CommonCodeNetIfc
  */
 
+#include "slp.h"
 #include "slp_types.h"
 #include "slp_iface.h"
 #include "slp_xmalloc.h"
@@ -49,6 +50,9 @@
 #include "slp_property.h"
 #include "slp_socket.h"
 #include "slp_debug.h"
+#if HAVE_IFADDRS_H
+#include <ifaddrs.h>
+#endif HAVE_IFADDRS_H
 
 /** The max index for v6 address to test for valid scope ids. */
 #define MAX_INTERFACE_TEST_INDEX 255

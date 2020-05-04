@@ -41,7 +41,7 @@ AC_CHECK_LIB([pthread], [pthread_create])
 AC_HEADER_STDC
 AC_HEADER_TIME
 AC_HEADER_STAT
-AC_CHECK_HEADERS([unistd.h stdio.h stdlib.h stddef.h stdarg.h stdint.h inttypes.h ctype.h string.h strings.h memory.h math.h limits.h errno.h signal.h fcntl.h pthread.h arpa/inet.h netdb.h sys/types.h sys/time.h sys/socket.h pwd.h grp.h])
+AC_CHECK_HEADERS([unistd.h stdio.h stdlib.h stddef.h stdarg.h stdint.h inttypes.h ctype.h string.h strings.h memory.h math.h limits.h errno.h signal.h fcntl.h pthread.h arpa/inet.h netdb.h sys/types.h sys/time.h sys/socket.h pwd.h grp.h ifaddrs.h])
 
 #
 # Checks for types
