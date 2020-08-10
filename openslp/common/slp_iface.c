@@ -41,7 +41,9 @@
  * @ingroup    CommonCodeNetIfc
  */
 
+#ifndef _WIN32
 #include "slp.h"
+#endif
 #include "slp_types.h"
 #include "slp_iface.h"
 #include "slp_xmalloc.h"
