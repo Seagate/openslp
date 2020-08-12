@@ -1,8 +1,10 @@
 id=$(strip $(shell . /etc/os-release; echo $$ID))
 
-all:
-	$(MAKE) build-$(id)
+all:	build-$(id)
 
 build-debian build-ubuntu:
 	sudo apt install -y autoconf automake libtool
-	./autoconf.sh && ./configure && make && sudo make install && sudo ldconfig -v
+	./autogen.sh && ./configure && $(MAKE)
+
+install: build-$(id)
+	sudo make install && sudo ldconfig -v
