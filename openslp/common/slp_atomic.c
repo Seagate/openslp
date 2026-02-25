@@ -44,6 +44,8 @@
 #include "slp_atomic.h"
 #include <assert.h>
 
+#if !defined(USE_STD_ATOMICS)
+
 #if defined(_WIN32)
 # define USE_WIN32_ATOMICS
 #elif defined(__GNUC__) && defined(__i386__)
@@ -224,6 +226,8 @@ static pthread_mutex_t g_atomic_mutex = PTHREAD_MUTEX_INITIALIZER;
 
 #endif
 
+#endif // USE_STD_ATOMICS
+
 /** Increment an integer and return the NEW value in an MP-safe manner.
  *
  * @param[in,out] pn - The address of an integer to atomically increment.
@@ -238,9 +242,11 @@ static pthread_mutex_t g_atomic_mutex = PTHREAD_MUTEX_INITIALIZER;
  *
  * @todo Fix the default atomic increment case so it is really atomic.
  */
-intptr_t SLPAtomicInc(intptr_t * pn)
+intptr_t SLPAtomicInc(SLP_ATOMIC intptr_t * pn)
 {
-#if defined(USE_WIN32_ATOMICS)
+#if defined(USE_STD_ATOMICS)
+    return atomic_fetch_add(pn, 1) + 1;
+#elif defined(USE_WIN32_ATOMICS)
    return (intptr_t)InterlockedIncrement((LPLONG)pn);
 #elif defined(USE_GCC_I386_ATOMICS)
    return (intptr_t)atomic_inc32((int32_t *)pn);
@@ -279,9 +285,11 @@ intptr_t SLPAtomicInc(intptr_t * pn)
  *
  * @todo Fix the default atomic decrement case so it is really atomic.
  */
-intptr_t SLPAtomicDec(intptr_t * pn)
+intptr_t SLPAtomicDec(SLP_ATOMIC intptr_t * pn)
 {
-#if defined(USE_WIN32_ATOMICS)
+#if defined(USE_STD_ATOMICS)
+    return atomic_fetch_sub(pn, 1) - 1;
+#elif defined(USE_WIN32_ATOMICS)
    return (intptr_t)InterlockedDecrement((LPLONG)pn);
 #elif defined(USE_GCC_I386_ATOMICS)
    return (intptr_t)atomic_dec32((int32_t *)pn);
@@ -325,10 +333,12 @@ intptr_t SLPAtomicDec(intptr_t * pn)
  *
  * @todo Fix the default atomic decrement case so it is really atomic.
  */
-intptr_t SLPAtomicXchg(intptr_t * pn, intptr_t n)
+intptr_t SLPAtomicXchg(SLP_ATOMIC intptr_t * pn, intptr_t n)
 {
-#if defined(USE_WIN32_ATOMICS)
-   return (intptr_t)InterlockedExchange((LPLONG)pn, (LONG)n); 
+#if defined(USE_STD_ATOMICS)
+    return atomic_exchange(pn, n);
+#elif defined(USE_WIN32_ATOMICS)
+   return (intptr_t)InterlockedExchange((LPLONG)pn, (LONG)n);
 #elif defined(USE_GCC_I386_ATOMICS)
    return (intptr_t)atomic_xchg32((int32_t *)pn, (int32_t)n);
 #elif defined(USE_GCC_X86_64_ATOMICS)
@@ -369,7 +379,7 @@ intptr_t SLPAtomicXchg(intptr_t * pn, intptr_t n)
  * @remarks The value at the address in @p pn should be preset to zero
  * as zero indicates the "unlocked" state in this type of lock.
  */
-void SLPSpinLockAcquire(intptr_t * pn)
+void SLPSpinLockAcquire(SLP_ATOMIC intptr_t * pn)
 {
    while (SLPAtomicXchg(pn, 1) != 0)
       sleep(0);
@@ -377,7 +387,7 @@ void SLPSpinLockAcquire(intptr_t * pn)
 
 /** TRY to acquire a user-space spinlock.
  *
- * We can be sure that if the return value is zero, that WE were the 
+ * We can be sure that if the return value is zero, that WE were the
  * setter, and not some other thread.
  *
  * @param[in,out] pn - The address of a value to be used as the lock point.
@@ -388,7 +398,7 @@ void SLPSpinLockAcquire(intptr_t * pn)
  * @remarks The value at the address in @p pn should be preset to zero
  * as zero indicates the "unlocked" state in this type of lock.
  */
-bool SLPSpinLockTryAcquire(intptr_t * pn)
+bool SLPSpinLockTryAcquire(SLP_ATOMIC intptr_t * pn)
 {
    return SLPAtomicXchg(pn, 1)? true: false;
 }
@@ -398,10 +408,10 @@ bool SLPSpinLockTryAcquire(intptr_t * pn)
  * @param[out] pn - The address of the lock control word.
  *
  * @remarks The lock is released by setting the value at @p pn to zero.
- * Simple aligned writes to a single-word addresses are inherently atomic 
+ * Simple aligned writes to a single-word addresses are inherently atomic
  * on decent processor architectures.
  */
-void SLPSpinLockRelease(intptr_t * pn)
+void SLPSpinLockRelease(SLP_ATOMIC intptr_t * pn)
 {
    *pn = 0;
 }

@@ -49,7 +49,7 @@
 #include "slp_property.h"
 
 static bool s_HandlesInitialized = false; /*!< Indicates we're fully initialized. */
-static intptr_t s_OpenSLPHandleCount = 0; /*!< Tracks OpenSLP handles. */
+static SLP_ATOMIC intptr_t s_OpenSLPHandleCount = 0; /*!< Tracks OpenSLP handles. */
 
 /** Initialize the User Agent library.
  *
